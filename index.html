@@ -5,20 +5,70 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
   <![endif]-->
   <style type="text/css">
-    #map { height: 180px; }
+    #map { height: 600px; }
   </style>
 
   <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 
 </head>
 <body>
-  <div id="map"></div>
+  <form method="get" action="#">
+  	<input type="text" id="q" name="q" value="Phoenix" /><input type="submit" />
+  </form>
+  <div id="map"></div>	
+
   <script type="text/javascript">
     var map = L.map('map').setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
 	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
 	    maxZoom: 18
 		}).addTo(map);
+
+    // Get url params
+    var prmstr = window.location.search.substr(1);
+		var prmarr = prmstr.split ("&");
+		var params = {};
+
+		for ( var i = 0; i < prmarr.length; i++) {
+		    var tmparr = prmarr[i].split("=");
+		    params[tmparr[0]] = tmparr[1];
+		}
+
+		console.log(decodeURIComponent(params["q"]))
+
+    xmlhttp=new XMLHttpRequest();
+    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(decodeURIComponent(params["q"])+"?format=json"),true);
+		xmlhttp.send();
+
+		xmlhttp.onreadystatechange=function() {
+		  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				console.log(xmlhttp);
+				response = JSON.parse(xmlhttp.responseText);
+				console.log(response);
+				result = response[0];
+				console.log(result);
+
+    		//map.setView([result.lat, result.lon], 13);
+//     		var southWest = new L.LatLng(40.712, -74.227),
+//     northEast = new L.LatLng(40.774, -74.125),
+//     bounds = new L.LatLngBounds(southWest, northEast);
+// All Leaflet methods that accept LatLngBounds objects also accept them in a simple Array form (unless noted otherwise), so the bounds example above can be passed like this:
+
+map.fitBounds([
+    [result.boundingbox[0], result.boundingbox[2]],
+    [result.boundingbox[1], result.boundingbox[3]]
+]);
+
+
+// map.fitBounds([
+//     result.polygonpoints[0],
+//     result.polygonpoints[1]
+// ]);
+    		//fitBounds( <LatLngBounds> bounds, <fitBounds options> options? )
+	    }
+	  }
+		
   </script>
+
 </body>
 </html>
