@@ -34,10 +34,15 @@
 		    params[tmparr[0]] = tmparr[1];
 		}
 
-		console.log(decodeURIComponent(params["q"]))
+		var query = decodeURIComponent(params["q"]).replace(/\+/g, ' ')
+		console.log(query)
+
+		if(query && query.length > 0) {
+			document.getElementById("q").value = query
+		}
 
     xmlhttp=new XMLHttpRequest();
-    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(decodeURIComponent(params["q"])+"?format=json"),true);
+    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
 		xmlhttp.send();
 
 		xmlhttp.onreadystatechange=function() {
