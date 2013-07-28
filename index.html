@@ -109,7 +109,7 @@
 	    xmlhttp=new XMLHttpRequest();
 	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
 			xmlhttp.send();
-			xmlhttp.onreadystatechange = function(){
+			xmlhttp.onreadystatechange = function(xmlhttp){
 			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 			  	callback(xmlhttp);
 			  }
@@ -120,7 +120,7 @@
 	    xmlhttp=new XMLHttpRequest();
 	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/reverse?format=json&lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lat)+"&zoom="+encodeURIComponent(zoom),true);
 			xmlhttp.send();
-			xmlhttp.onreadystatechange = function(){
+			xmlhttp.onreadystatechange = function(xmlhttp){
 			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 			  	callback();
 			  }
