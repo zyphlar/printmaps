@@ -32,6 +32,8 @@
   <form method="get" action="#" id="search_form">
   	<input type="text" id="q" name="q" value="Tempe, Arizona" /><input type="submit" />
   </form>
+  <input type="button" value="Print" onclick="printMap()" />
+
   <div id="map"></div>	
   <ul id="results"></ul>
 
@@ -94,10 +96,12 @@
 	    	},function(error){
 	    		console.log(error);
 	    		updateMap("Tempe, Arizona",[[33.6569,-111.6801],[33.3133,-112.3276]])
+          window.query = "Tempe, Arizona";
 	    	});
 	    }
 	    else {
 			  updateMap("Tempe, Arizona",[[33.6569,-111.6801],[33.3133,-112.3276]])
+        window.query = "Tempe, Arizona";
 	    }
 		}
 
@@ -107,8 +111,6 @@
 			forwardLookup(query,function(xmlhttp) {
 		  	// Decode response as JSON
 				response = JSON.parse(xmlhttp.responseText);
-        console.log(response);
-        console.log("SUP");
 
 				if(response.length > 0){
 					// Display all results in sidebar
@@ -176,7 +178,19 @@
 			
 			// Fit map to the GPS boundaries
 			map.fitBounds(bounds);
-		};
+		}
+
+    function printMap(){
+      var bounds = map.getBounds();
+      newwindow=window.open("print.html?q="+query
+        +"&b0="+bounds._northEast.lat
+        +"&b1="+bounds._northEast.lng
+        +"&b2="+bounds._southWest.lat
+        +"&b3="+bounds._southWest.lng
+        ,'name');
+      if (window.focus) {newwindow.focus()}
+      return false;
+    }
 
   </script>
 

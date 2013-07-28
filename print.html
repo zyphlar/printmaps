@@ -1,0 +1,111 @@
+<html>
+<head>
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+  <!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+  <![endif]-->
+  <style type="text/css">
+	  body{
+	  	padding: 0;
+	  	margin: 0;
+	  }
+    #map { 
+    	height: 2550px; /* 8.5 inch at 300 dpi */
+    	width: 3300px;  /* 11 inch at 300 dpi */
+    }
+  </style>
+  <style type="text/css" media="print">
+	  @page {
+			size: 11in 8.5in; 
+		  margin: 0mm; 
+		}
+    htmlff,boffdy { 
+    	height: 8.5in; 
+    	width: 11in; 
+    }
+    #mapfoo {
+    	margin: 0.25in;
+    	height: 8in; 
+    	width: 10.5in; 
+    }
+  </style>
+
+  <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+
+</head>
+<body>
+  <div id="map"></div>	
+
+  <script type="text/javascript">
+
+		var query = "";
+    var map = L.map('map', {zoomControl: false}); //.setView([51.505, -0.09], 13);
+    L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
+	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
+	    maxZoom: 18
+		}).addTo(map);
+
+    // Get url params
+    var prmstr = window.location.search.substr(1);
+		var prmarr = prmstr.split ("&");
+		var params = {};
+		for ( var i = 0; i < prmarr.length; i++) {
+		    var tmparr = prmarr[i].split("=");
+		    params[tmparr[0]] = tmparr[1];
+		}
+
+		// decode query param
+		if(params["q"] && params["b0"] && params["b1"] && params["b2"] && params["b3"]){
+			updateMap(decodeURIComponent(params["q"]),[[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
+				  [decodeURIComponent(params["b2"]), decodeURIComponent(params["b3"])]]);
+			//uploadCanvas();
+			//print();
+		}
+		else {
+			alert("No boundaries given!");
+		}
+
+
+		function updateMap(query,bounds){
+			// Fit map to the GPS boundaries
+			map.fitBounds(bounds);
+		};
+
+		function uploadCanvas(){
+			var data = "<svg xmlns='http://www.w3.org/2000/svg' width='3300' height='2550'>" +
+			             "<foreignObject width='100%' height='100%'>" +
+			               "<div xmlns='http://www.w3.org/1999/xhtml' >" +
+			                  document.getElementById("map").innerHTML+
+			               "</div>" +
+			             "</foreignObject>" +
+			           "</svg>";
+			document.getElementById("map").innerHTML = data;
+		}
+
+		function drawCanvas(){
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var data = "<svg xmlns='http://www.w3.org/2000/svg' width='3300' height='2550'>" +
+			             "<foreignObject width='100%' height='100%'>" +
+			               "<div xmlns='http://www.w3.org/1999/xhtml' >" +
+			                  document.getElementById("map").innerHTML+
+			               "</div>" +
+			             "</foreignObject>" +
+			           "</svg>";
+			var DOMURL = self.URL || self.webkitURL || self;
+			var img = new Image();
+			var svg = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
+			var url = DOMURL.createObjectURL(svg);
+			img.onload = function() {
+			    ctx.drawImage(img, 0, 0);
+			    DOMURL.revokeObjectURL(url);
+			};
+			img.src = url;
+		}
+
+  </script>
+
+
+
+</body>
+</html>
