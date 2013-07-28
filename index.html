@@ -30,7 +30,7 @@
 </head>
 <body>
   <form method="get" action="#" id="search_form">
-  	<input type="text" id="q" name="q" value="Phoenix" /><input type="submit" />
+  	<input type="text" id="q" name="q" value="Tempe, Arizona" /><input type="submit" />
   </form>
   <div id="map"></div>	
   <ul id="results"></ul>
@@ -57,20 +57,39 @@
 		if(params["q"] && params["q"].length > 0){
 			handleQuery(decodeURIComponent(params["q"]).replace(/\+/g, ' '));
 		}
-		else
-		{
+		else {
 			if (navigator.geolocation)
 	    {
 	    	navigator.geolocation.getCurrentPosition(function(pos){
-	    		map.setView([pos.coords.latitude,pos.coords.longitude],10);
+          // Move the map over
+	    		map.setView([pos.coords.latitude,pos.coords.longitude],12);
+
 	    		// AJAX request for checking where we are
-					reverseLookup(pos.coords.latitude,pos.coords.longitude,10,function(xmlhttp) {
+					reverseLookup(pos.coords.latitude,pos.coords.longitude,18,function(xmlhttp) {
 				  	// Decode response as JSON
 						response = JSON.parse(xmlhttp.responseText);
 
-						if(response.length > 0){
-							console.log(response);
+						if(response.address){
+							console.log(response.address);
+              var loc = "";
+              // Set search textbox to where we think we are
+              if(response.address.suburb){
+                loc += response.address.suburb+", ";
+              }
+              if(response.address.city){
+                loc += response.address.city+", ";
+              }
+              if(response.address.state){
+                loc += response.address.state+", ";
+              }
+              if(response.address.country){
+                loc += response.address.country+", ";
+              }
+              document.getElementById("q").value = loc;
 						}
+            else{
+              console.log("No reverse-lookup json");
+            }
 					});
 	    	},function(error){
 	    		console.log(error);
@@ -88,6 +107,8 @@
 			forwardLookup(query,function(xmlhttp) {
 		  	// Decode response as JSON
 				response = JSON.parse(xmlhttp.responseText);
+        console.log(response);
+        console.log("SUP");
 
 				if(response.length > 0){
 					// Display all results in sidebar
@@ -109,20 +130,21 @@
 	    xmlhttp=new XMLHttpRequest();
 	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
 			xmlhttp.send();
-			xmlhttp.onreadystatechange = function(xmlhttp){
+			xmlhttp.onreadystatechange = function(){
 			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 			  	callback(xmlhttp);
 			  }
 			}; 
 		}
 
-		function reverseLookup(lat,long,zoom,callback){
+		function reverseLookup(lat,lon,zoom,callback){
 	    xmlhttp=new XMLHttpRequest();
-	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/reverse?format=json&lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lat)+"&zoom="+encodeURIComponent(zoom),true);
+      request = "http://nominatim.openstreetmap.org/reverse?format=json&lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lon)+"&zoom="+encodeURIComponent(zoom);
+	    xmlhttp.open("GET",request,true);
 			xmlhttp.send();
-			xmlhttp.onreadystatechange = function(xmlhttp){
+			xmlhttp.onreadystatechange = function(){
 			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-			  	callback();
+			  	callback(xmlhttp);
 			  }
 			}; 
 		}
