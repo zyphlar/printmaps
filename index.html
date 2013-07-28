@@ -5,22 +5,42 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
   <![endif]-->
   <style type="text/css">
-    #map { height: 600px; }
+    #map { 
+    	height: 600px; 
+    	width: 80%;
+    }
+    #results { 
+    	width: 18%;
+		  position: absolute;
+			top: 0;
+			right: 0;
+		}
+		#results li span {
+			cursor: pointer;
+			color: blue;
+			text-decoration: underline;
+		}
+		.active_result {
+			background-color: #eee;
+		}
   </style>
 
   <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 
 </head>
 <body>
-  <form method="get" action="#">
+  <form method="get" action="#" id="search_form">
   	<input type="text" id="q" name="q" value="Phoenix" /><input type="submit" />
   </form>
   <div id="map"></div>	
+  <ul id="results">
+  	<h3>Results</h3>
+  </ul>
 
   <script type="text/javascript">
     var map = L.map('map').setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
 	    maxZoom: 18
 		}).addTo(map);
 
@@ -28,51 +48,68 @@
     var prmstr = window.location.search.substr(1);
 		var prmarr = prmstr.split ("&");
 		var params = {};
-
 		for ( var i = 0; i < prmarr.length; i++) {
 		    var tmparr = prmarr[i].split("=");
 		    params[tmparr[0]] = tmparr[1];
 		}
 
+		// decode query param
 		var query = decodeURIComponent(params["q"]).replace(/\+/g, ' ')
 		console.log(query)
 
+		// set search textbox to query
 		if(query && query.length > 0) {
 			document.getElementById("q").value = query
 		}
 
+		// AJAX request for geolocation of query
     xmlhttp=new XMLHttpRequest();
     xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
 		xmlhttp.send();
-
 		xmlhttp.onreadystatechange=function() {
 		  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-				console.log(xmlhttp);
+		  	// Decode response as JSON and 
 				response = JSON.parse(xmlhttp.responseText);
 				console.log(response);
-				result = response[0];
-				console.log(result);
 
-    		//map.setView([result.lat, result.lon], 13);
-//     		var southWest = new L.LatLng(40.712, -74.227),
-//     northEast = new L.LatLng(40.774, -74.125),
-//     bounds = new L.LatLngBounds(southWest, northEast);
-// All Leaflet methods that accept LatLngBounds objects also accept them in a simple Array form (unless noted otherwise), so the bounds example above can be passed like this:
+				if(response.length > 0){
+					// Display all results in sidebar
+					response.forEach(function(result,index){
+						appendToResults(index,result.display_name);
+					});
 
-map.fitBounds([
-    [result.boundingbox[0], result.boundingbox[2]],
-    [result.boundingbox[1], result.boundingbox[3]]
-]);
-
-
-// map.fitBounds([
-//     result.polygonpoints[0],
-//     result.polygonpoints[1]
-// ]);
-    		//fitBounds( <LatLngBounds> bounds, <fitBounds options> options? )
+					// Fit map to bounds of first result
+					showItem(0);
+				}
+				else {
+						appendToResults("No Results");
+				}
 	    }
 	  }
 		
+		function appendToResults(index,name){
+			var item = document.createElement("li");
+			item.innerHTML = "<span onclick=\"showItem('"+index+"');\">"+name+'</span>';
+			item.id = "result_"+index;
+			document.getElementById("results").appendChild(item);
+		}
+
+		function showItem(index){
+			// Change this item to be the active one
+			var results = document.getElementsByClassName("active_result")
+			for(var i=0; i < results.length; i++){
+				console.log(i);
+				results[i].className = "";
+			}
+			document.getElementById("result_"+index).className = "active_result";
+
+			// Change map to show this item
+			map.fitBounds([
+			    [response[index].boundingbox[0], response[index].boundingbox[2]],
+			    [response[index].boundingbox[1], response[index].boundingbox[3]]
+			]);
+		}
+
   </script>
 
 </body>
