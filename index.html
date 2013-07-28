@@ -33,12 +33,12 @@
   	<input type="text" id="q" name="q" value="Phoenix" /><input type="submit" />
   </form>
   <div id="map"></div>	
-  <ul id="results">
-  	<h3>Results</h3>
-  </ul>
+  <ul id="results"></ul>
 
   <script type="text/javascript">
-    var map = L.map('map').setView([51.505, -0.09], 13);
+
+	  var query = "";
+    var map = L.map('map'); //.setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
 	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
 	    maxZoom: 18
@@ -54,23 +54,40 @@
 		}
 
 		// decode query param
-		var query = decodeURIComponent(params["q"]).replace(/\+/g, ' ')
-		console.log(query)
+		if(params["q"] && params["q"].length > 0){
+			handleQuery(decodeURIComponent(params["q"]).replace(/\+/g, ' '));
+		}
+		else
+		{
+			if (navigator.geolocation)
+	    {
+	    	navigator.geolocation.getCurrentPosition(function(pos){
+	    		map.setView([pos.coords.latitude,pos.coords.longitude],10);
+	    		// AJAX request for checking where we are
+					reverseLookup(pos.coords.latitude,pos.coords.longitude,10,function(xmlhttp) {
+				  	// Decode response as JSON
+						response = JSON.parse(xmlhttp.responseText);
 
-		// set search textbox to query
-		if(query && query.length > 0) {
-			document.getElementById("q").value = query
+						if(response.length > 0){
+							console.log(response);
+						}
+					});
+	    	},function(error){
+	    		console.log(error);
+	    		updateMap("Tempe, Arizona",[[33.6569,-111.6801],[33.3133,-112.3276]])
+	    	});
+	    }
+	    else {
+			  updateMap("Tempe, Arizona",[[33.6569,-111.6801],[33.3133,-112.3276]])
+	    }
 		}
 
-		// AJAX request for geolocation of query
-    xmlhttp=new XMLHttpRequest();
-    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
-		xmlhttp.send();
-		xmlhttp.onreadystatechange=function() {
-		  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-		  	// Decode response as JSON and 
+		function handleQuery(query){
+			window.query = query;
+			// AJAX request for geolocation of query
+			forwardLookup(query,function(xmlhttp) {
+		  	// Decode response as JSON
 				response = JSON.parse(xmlhttp.responseText);
-				console.log(response);
 
 				if(response.length > 0){
 					// Display all results in sidebar
@@ -82,11 +99,34 @@
 					showItem(0);
 				}
 				else {
-						appendToResults("No Results");
+					appendToResults("No Results");
 				}
-	    }
-	  }
-		
+		  });
+
+		}
+
+		function forwardLookup(query,callback){
+	    xmlhttp=new XMLHttpRequest();
+	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/search/"+encodeURIComponent(query)+"?format=json",true);
+			xmlhttp.send();
+			xmlhttp.onreadystatechange = function(){
+			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			  	callback(xmlhttp);
+			  }
+			}; 
+		}
+
+		function reverseLookup(lat,long,zoom,callback){
+	    xmlhttp=new XMLHttpRequest();
+	    xmlhttp.open("GET","http://nominatim.openstreetmap.org/reverse?format=json&lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lat)+"&zoom="+encodeURIComponent(zoom),true);
+			xmlhttp.send();
+			xmlhttp.onreadystatechange = function(){
+			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			  	callback();
+			  }
+			}; 
+		}
+
 		function appendToResults(index,name){
 			var item = document.createElement("li");
 			item.innerHTML = "<span onclick=\"showItem('"+index+"');\">"+name+'</span>';
@@ -103,12 +143,18 @@
 			}
 			document.getElementById("result_"+index).className = "active_result";
 
-			// Change map to show this item
-			map.fitBounds([
-			    [response[index].boundingbox[0], response[index].boundingbox[2]],
-			    [response[index].boundingbox[1], response[index].boundingbox[3]]
-			]);
+			// Update the map
+			updateMap(query,[[response[index].boundingbox[0], response[index].boundingbox[2]],
+			  [response[index].boundingbox[1], response[index].boundingbox[3]]]);
 		}
+
+		function updateMap(query,bounds){
+			// Set search textbox to query
+			document.getElementById("q").value = query;
+			
+			// Fit map to the GPS boundaries
+			map.fitBounds(bounds);
+		};
 
   </script>
 
