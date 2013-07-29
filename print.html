@@ -88,7 +88,7 @@
 		}).addTo(map);
 
 		// decode query param
-		if(params["q"] && params["b0"] && params["b1"] && params["b2"] && params["b3"]){
+		if( params["b0"] && params["b1"] && params["b2"] && params["b3"]){
 			updateMap(query,[[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
 				  [decodeURIComponent(params["b2"]), decodeURIComponent(params["b3"])]]);
 		}
