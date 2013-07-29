@@ -80,26 +80,32 @@
 		    params[tmparr[0]] = tmparr[1];
 		}
 
-		var query = decodeURIComponent(params["q"]);
+		var query = "";
     var map = L.map('map', {zoomControl: false}); //.setView([51.505, -0.09], 13);
-    L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
-	    attribution: query+' map from PrintMaps.com; Data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>; Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
-	    maxZoom: 18
-		}).addTo(map);
+
+    if(params["q"]){
+    	window.query = decodeURIComponent(params["q"]);
+    	updateTitle(window.query);
+    }
 
 		// decode query param
-		if( params["b0"] && params["b1"] && params["b2"] && params["b3"]){
-			updateMap(query,[[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
+		if(params["b0"] && params["b1"] && params["b2"] && params["b3"]){
+
+			// Update the map
+			updateMap([[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
 				  [decodeURIComponent(params["b2"]), decodeURIComponent(params["b3"])]]);
+
+			// Figure out what the actual name of this place is
+			var latavg = (parseFloat(decodeURIComponent(params["b0"]))+parseFloat(decodeURIComponent(params["b2"])))/2;
+			var lonavg = (parseFloat(decodeURIComponent(params["b1"]))+parseFloat(decodeURIComponent(params["b3"])))/2;
+			doReverseLookup(latavg, lonavg, map.getZoom());
+
 		}
 		else {
 			alert("No boundaries given!");
 		}
 
-
-		function updateMap(query,bounds){
-			// Generate title
-			document.title = query + " map";
+		function updateMap(bounds){
 			// Fit map to the GPS boundaries
 			map.fitBounds(bounds);
 		};
@@ -118,6 +124,70 @@
 			setTimeout(function(){
 				print();
 			},2000);
+		}
+
+		function doReverseLookup(lat, lon, zoom){
+
+			// AJAX request for checking where we are
+			reverseLookup(lat,lon,zoom,function(xmlhttp) {
+		  	// Decode response as JSON
+				response = JSON.parse(xmlhttp.responseText);
+
+				if(response.address){
+					console.log(response.address);
+					console.log(zoom);
+	        var loc = [];
+	        // Set search textbox to where we think we are
+	        if(response.address.suburb && zoom > 14){
+	          loc.push(response.address.suburb);
+	        }
+	        if(response.address.city && zoom > 9){
+	          loc.push(response.address.city);
+	        }
+	        else {
+	        	if(response.address.county && zoom > 9){
+	        		loc.push(response.address.county+" County");
+	        	}
+	        }
+	        if(response.address.state && zoom >= 8){
+	          loc.push(response.address.state);
+	        }
+	        if(response.address.country && zoom <= 8){
+	          loc.push(response.address.country);
+	        }
+	        window.query = loc.join(", ");
+	        updateTitle(window.query);
+	        setTileLayer(window.query);
+				}
+	      else{
+	        console.log("No reverse-lookup json");
+	        setTileLayer(window.query);
+	      }
+			});
+		}
+
+		function reverseLookup(lat,lon,zoom,callback){
+	    xmlhttp=new XMLHttpRequest();
+      request = "http://nominatim.openstreetmap.org/reverse?format=json&lat="+encodeURIComponent(lat)+"&lon="+encodeURIComponent(lon)+"&zoom="+encodeURIComponent(zoom);
+	    xmlhttp.open("GET",request,true);
+			xmlhttp.send();
+			xmlhttp.onreadystatechange = function(){
+			  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			  	callback(xmlhttp);
+			  }
+			}; 
+		}
+
+		function updateTitle(title){
+			// Generate title
+			document.title = query + " map";
+		}
+
+		function setTileLayer(query){
+	    L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
+		    attribution: query+' map from PrintMaps.com; Data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>; Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
+		    maxZoom: 18
+			}).addTo(map);
 		}
 		
 		function halveMap(){
