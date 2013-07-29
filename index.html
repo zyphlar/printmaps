@@ -10,20 +10,28 @@
       position: absolute;
       top: 0;
       right: 0;
-      z-index: 999;
+      z-index: 9999;
       background-color: white;
       font-family: Arial, Helvetica, sans-serif;
       padding: 1em;
-      border: 1px solid black;
+      width: 15em;
+      height: 612px;
+      overflow-y: auto;
+      opacity: 0.8;
     }
+    #printbutton {
+      font-size: 1.5em;
+      font-weight: bold;
+    } 
     #map { 
+      padding: 1em;
+      border: 1px solid black;
     	height: 612px; /* 8.5 inch at 72 dpi */
     	width: 792px; /* 11 inch at 72 dpi */
     }
     #results { 
       margin: 0 0 0 1em;
       padding: 0;
-      width: 12em;
 		}
 		#results li span {
 			cursor: pointer;
@@ -43,7 +51,13 @@
     <form method="get" action="#" id="search_form">
     	<input type="text" id="q" name="q" value="" /><input type="submit" />
     </form>
-    <input type="button" value="Print" onclick="printMap()" />
+    <input type="button" id="printbutton" value="Print" onclick="printMap()" />
+    <h2>Printable High-Resolution Maps!</h2>
+    <ol>
+      <li>Search/center/zoom this map until it covers the desired area.</li>
+      <li>Click the Print button above.</li>
+      <li>A new window will open with a high-resolution map!</li>
+    </ol>
     <ul id="results"></ul>
   </div>
 
@@ -54,7 +68,7 @@
 	  var query = "";
     var map = L.map('map'); //.setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
+	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>; Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
 	    maxZoom: 18
 		}).addTo(map);
 

@@ -9,20 +9,26 @@
 	  	padding: 0;
 	  	margin: 0;
 	  }
-	  #navigation {
-	  	position: absolute;
-	  	top: 0;
-	  	left: 0;
-	  	z-index: 999;
-	  	background-color: white;
-	  	font-family: Arial, Helvetica, sans-serif;
-	  	padding: 1em;
-	  	border: 1px solid black;
-	  }
+    #navigation {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 9999;
+      background-color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 1em;
+      width: 20em;
+      overflow-y: auto;
+      opacity: 0.8;
+    }
     #map { 
     	height: 2550px; /* 8.5 inch at 300 dpi */
     	width: 3300px;  /* 11 inch at 300 dpi */
     }
+    #printbutton {
+      font-size: 1.5em;
+      font-weight: bold;
+    } 
   </style>
   <style type="text/css" media="print">
 	  @page {
@@ -49,11 +55,17 @@
 </head>
 <body>
 	<div id="navigation">
-		<p>Wait for the (huge!) map to load, then click Print.<br/>
-		If it comes out poorly, close this window and try again.</p>
+		<ol>
+			<li>Wait for the (huge!) map to load, then click Print.</li>
+			<li>Check the print preview for missing chunks of map!</li>
+			<li>If there's some problem, just close this window and try again, or click Refresh.</li>
+			<li>
+				<a href="https://github.com/zyphlar/printmaps/issues">Report</a> any unsolvable issues, or
+				<a href="https://github.com/zyphlar/printmaps">Contribute</a> to make this tool better!
+			</li>
+		</ol>
 		<input type="button" value="Print" id="printbutton" onclick="printMap()" />
 	</div>
-	<div id="title"></div>
   <div id="map"></div>	
 
   <script type="text/javascript">
@@ -70,7 +82,7 @@
 		var query = decodeURIComponent(params["q"]);
     var map = L.map('map', {zoomControl: false}); //.setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
-	    attribution: query+' map from PrintMaps.com, data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
+	    attribution: query+' map from PrintMaps.com; Data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>; Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
 	    maxZoom: 18
 		}).addTo(map);
 
