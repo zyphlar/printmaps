@@ -32,7 +32,7 @@
     	height: 8.5in; 
     	width: 11in; 
     }
-    #mapfoo {
+    #map {
     	margin: 0.25in;
     	height: 8in; 
     	width: 10.5in; 
@@ -79,57 +79,37 @@
 			map.fitBounds(bounds);
 		};
 
+		var mapHalved = false;
 		function printMap(){
-			halveMap();
-			print();
+			// Only halve the map if it hasn't already been halved
+			if(!mapHalved){
+				halveMap();
+			}
+			// It takes awhile to halve, so print after 2sec.
+			setTimeout(function(){
+				print();
+			},2000);
 		}
-
 		
 		function halveMap(){
+
+			// Halve size of map container (hopefully no redraw!)
+		  map._container.style.width = window.getComputedStyle(map._container, null).width.split("px")[0]*0.4+"px";
+		  map._container.style.height = window.getComputedStyle(map._container, null).height.split("px")[0]*0.4+"px";
+
 			// Halve size of each leaflet tile AND decrease its offsets by half
 			var leaflets = document.getElementsByClassName("leaflet-tile");
 			for(var i=0; i < leaflets.length; i++){
 			  element = leaflets[i];
-			  element.style.width = element.style.width.split("px")[0]/2+"px";
-			  element.style.height = element.style.height.split("px")[0]/2+"px";
+			  element.style.width = element.style.width.split("px")[0]*0.4+"px";
+			  element.style.height = element.style.height.split("px")[0]*0.4+"px";
 
-			  computedStyle = window.getComputedStyle(element, null); // "null" means this is not a pesudo style.
-			  // You can retrieve the CSS3 matrix string by the following method.
-			  var matrix = computedStyle.getPropertyValue('transform')
-			    || computedStyle.getPropertyValue('-moz-transform')
-			    || computedStyle.getPropertyValue('-webkit-transform')
-			    || computedStyle.getPropertyValue('-ms-transform')
-			    || computedStyle.getPropertyValue('-o-transform');
-
-			  // Parse this string to obtain different attributes of the matrix.
-			  // This regexp matches anything looks like this: anything(1, 2, 3, 4, 5, 6);
-			  // Hence it matches both matrix strings:
-			  // 2d: matrix(1,2,3,4,5,6)
-			  // 3d: matrix3d(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16);
-			  var matrixPattern = /^\w*\((((\d+)|(\d*\.\d+)|(\-\d*)),\s*)*((\d+)|(\d*\.\d+)|(\-\d*))\)/i;
-			  var matrixValue = [];
-			  if (matrixPattern.test(matrix)) { // When it satisfy the pattern.
-			      console.log(matrix);
-			      var matrixCopy = matrix.replace(/^\w*\(/, '').replace(')', '');
-			      console.log(matrixCopy);
-			      m = matrixCopy.split(/\s*,\s*/);
-			      console.log(m);
-			      m[4] = m[4]/2;
-			      m[5] = m[5]/2;
-			      console.log(m);
-			      element.style.webkitTransform = "matrix("+m[0]+", "+m[1]+", "+m[2]+", "+m[3]+", "+m[4]+", "+m[5]+")";
-			      console.log(element.style.webkitTransform);
-			  }
+			  element.style.left = element.style.left.split("px")[0]*0.4+"px";
+			  element.style.top = element.style.top.split("px")[0]*0.4+"px";
 			}
 
-			// Halve size of map container (hopefully no redraw!)
-
-		  map._container.style.width = window.getComputedStyle(map._container, null).width.split("px")[0]/2+"px";
-		  map._container.style.height = window.getComputedStyle(map._container, null).height.split("px")[0]/2+"px";
-
+			mapHalved = true;
 		}
-
-
 
   </script>
 
