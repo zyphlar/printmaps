@@ -9,11 +9,15 @@
 	  	padding: 0;
 	  	margin: 0;
 	  }
-	  #printbutton {
+	  #printmessage {
 	  	position: absolute;
 	  	top: 0;
 	  	left: 0;
 	  	z-index: 999;
+	  	background-color: white;
+	  	font-family: Arial, Helvetica, sans-serif;
+	  	padding: 1em;
+	  	border: 1px solid black;
 	  }
     #map { 
     	height: 2550px; /* 8.5 inch at 300 dpi */
@@ -25,7 +29,7 @@
 			size: 11in 8.5in; 
 		  margin: 0mm; 
 		}
-	  #printbutton {
+	  #printmessage {
 	  	display: none;
 	  }
     htmlff,boffdy { 
@@ -39,11 +43,16 @@
     }
   </style>
 
-  <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+  <!-- <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script> -->
+  <script src="leaflet.js"></script>
 
 </head>
 <body>
-	<input type="button" value="Print" id="printbutton" onclick="printMap()" />
+	<div id="printmessage">
+		<p>Wait for the (huge!) map to load, then click Print.<br/>
+		If it comes out poorly, close this window and try again.</p>
+		<input type="button" value="Print" id="printbutton" onclick="printMap()" />
+	</div>
   <div id="map"></div>	
 
   <script type="text/javascript">
@@ -84,6 +93,10 @@
 			// Only halve the map if it hasn't already been halved
 			if(!mapHalved){
 				halveMap();
+				// Grab the map HTML, kill the dynamic map, and reinject a static map.
+				mapHTML = map._container.innerHTML;
+				map._container.innerHTML = null; 
+				document.getElementById("map").innerHTML = mapHTML;
 			}
 			// It takes awhile to halve, so print after 2sec.
 			setTimeout(function(){
@@ -93,19 +106,21 @@
 		
 		function halveMap(){
 
+			resizeScale = 0.285; // magic number that seems to work best in Chrome
+
 			// Halve size of map container (hopefully no redraw!)
-		  map._container.style.width = window.getComputedStyle(map._container, null).width.split("px")[0]*0.4+"px";
-		  map._container.style.height = window.getComputedStyle(map._container, null).height.split("px")[0]*0.4+"px";
+		  map._container.style.width = window.getComputedStyle(map._container, null).width.split("px")[0]*resizeScale+"px";
+		  map._container.style.height = window.getComputedStyle(map._container, null).height.split("px")[0]*resizeScale+"px";
 
 			// Halve size of each leaflet tile AND decrease its offsets by half
 			var leaflets = document.getElementsByClassName("leaflet-tile");
 			for(var i=0; i < leaflets.length; i++){
 			  element = leaflets[i];
-			  element.style.width = element.style.width.split("px")[0]*0.4+"px";
-			  element.style.height = element.style.height.split("px")[0]*0.4+"px";
+			  element.style.width = element.style.width.split("px")[0]*resizeScale+"px";
+			  element.style.height = element.style.height.split("px")[0]*resizeScale+"px";
 
-			  element.style.left = element.style.left.split("px")[0]*0.4+"px";
-			  element.style.top = element.style.top.split("px")[0]*0.4+"px";
+			  element.style.left = element.style.left.split("px")[0]*resizeScale+"px";
+			  element.style.top = element.style.top.split("px")[0]*resizeScale+"px";
 			}
 
 			mapHalved = true;
