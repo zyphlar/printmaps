@@ -9,7 +9,7 @@
 	  	padding: 0;
 	  	margin: 0;
 	  }
-	  #printmessage {
+	  #navigation {
 	  	position: absolute;
 	  	top: 0;
 	  	left: 0;
@@ -29,7 +29,7 @@
 			size: 11in 8.5in; 
 		  margin: 0mm; 
 		}
-	  #printmessage {
+	  #navigation {
 	  	display: none;
 	  }
     htmlff,boffdy { 
@@ -48,21 +48,15 @@
 
 </head>
 <body>
-	<div id="printmessage">
+	<div id="navigation">
 		<p>Wait for the (huge!) map to load, then click Print.<br/>
 		If it comes out poorly, close this window and try again.</p>
 		<input type="button" value="Print" id="printbutton" onclick="printMap()" />
 	</div>
+	<div id="title"></div>
   <div id="map"></div>	
 
   <script type="text/javascript">
-
-		var query = "";
-    var map = L.map('map', {zoomControl: false}); //.setView([51.505, -0.09], 13);
-    L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
-	    maxZoom: 18
-		}).addTo(map);
 
     // Get url params
     var prmstr = window.location.search.substr(1);
@@ -73,9 +67,16 @@
 		    params[tmparr[0]] = tmparr[1];
 		}
 
+		var query = decodeURIComponent(params["q"]);
+    var map = L.map('map', {zoomControl: false}); //.setView([51.505, -0.09], 13);
+    L.tileLayer('http://{s}.tile.cloudmade.com/4be2d4a8b7ae4a5e8ebc0558bb5d7db4/997/256/{z}/{x}/{y}.png', {
+	    attribution: query+' map from PrintMaps.com, data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>',
+	    maxZoom: 18
+		}).addTo(map);
+
 		// decode query param
 		if(params["q"] && params["b0"] && params["b1"] && params["b2"] && params["b3"]){
-			updateMap(decodeURIComponent(params["q"]),[[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
+			updateMap(query,[[decodeURIComponent(params["b0"]), decodeURIComponent(params["b1"])],
 				  [decodeURIComponent(params["b2"]), decodeURIComponent(params["b3"])]]);
 		}
 		else {
@@ -84,6 +85,8 @@
 
 
 		function updateMap(query,bounds){
+			// Generate title
+			document.title = query + " map";
 			// Fit map to the GPS boundaries
 			map.fitBounds(bounds);
 		};
@@ -106,7 +109,7 @@
 		
 		function halveMap(){
 
-			resizeScale = 0.285; // magic number that seems to work best in Chrome
+			resizeScale = 0.281; // magic number that seems to work best in Chrome
 
 			// Halve size of map container (hopefully no redraw!)
 		  map._container.style.width = window.getComputedStyle(map._container, null).width.split("px")[0]*resizeScale+"px";

@@ -1,19 +1,29 @@
 <html>
 <head>
+  <title>Printable High-Resolution Maps!</title>
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
   <!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
   <![endif]-->
   <style type="text/css">
+    #navigation {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 999;
+      background-color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 1em;
+      border: 1px solid black;
+    }
     #map { 
     	height: 612px; /* 8.5 inch at 72 dpi */
     	width: 792px; /* 11 inch at 72 dpi */
     }
     #results { 
-    	width: 18%;
-		  position: absolute;
-			top: 0;
-			right: 0;
+      margin: 0 0 0 1em;
+      padding: 0;
+      width: 12em;
 		}
 		#results li span {
 			cursor: pointer;
@@ -29,13 +39,15 @@
 
 </head>
 <body>
-  <form method="get" action="#" id="search_form">
-  	<input type="text" id="q" name="q" value="Tempe, Arizona" /><input type="submit" />
-  </form>
-  <input type="button" value="Print" onclick="printMap()" />
+  <div id="navigation">
+    <form method="get" action="#" id="search_form">
+    	<input type="text" id="q" name="q" value="" /><input type="submit" />
+    </form>
+    <input type="button" value="Print" onclick="printMap()" />
+    <ul id="results"></ul>
+  </div>
 
   <div id="map"></div>	
-  <ul id="results"></ul>
 
   <script type="text/javascript">
 
